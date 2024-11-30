@@ -113,15 +113,26 @@ if menu == "Train Model":
 
                 # Evaluation
                 model.eval()
-                correct, total = 0, 0
+                y_true = []
+                y_pred = []
                 with torch.no_grad():
                     for X_batch, y_batch in test_loader:
                         outputs = model(X_batch)
                         _, predicted = torch.max(outputs.data, 1)
-                        total += y_batch.size(0)
-                        correct += (predicted == y_batch).sum().item()
+                        y_true.extend(y_batch.tolist())
+                        y_pred.extend(predicted.tolist())
 
-                st.write("Test Accuracy:", 100 * correct / total)
+                # Compute metrics
+                precision = precision_score(y_true, y_pred, average="binary")
+                recall = recall_score(y_true, y_pred, average="binary")
+                f1 = f1_score(y_true, y_pred, average="binary")
+                accuracy = sum(1 for a, b in zip(y_true, y_pred) if a == b) / len(y_true)
+
+                st.write("**Metrics on Test Set:**")
+                st.write(f"- **Accuracy**: {accuracy * 100:.2f}%")
+                st.write(f"- **Precision**: {precision:.2f}")
+                st.write(f"- **Recall**: {recall:.2f}")
+                st.write(f"- **F1-Score**: {f1:.2f}")
         else:
             st.error("Dataset harus menyertakan fitur dan kolom label yang ditentukan.")
 
